@@ -4,34 +4,82 @@ from typing import Optional, Tuple, List
 from evaluation import ChessEvaluator
 
 class ChessEngine:
-    def __init__(self, depth: int = 4, time_limit: float = 3.0):
+    def __init__(self, depth: int = 6, time_limit: float = 3.0):# Also change depth and time in chess_gui.py
         self.depth = depth
         self.time_limit = time_limit  # Time limit in seconds
         self.evaluator = ChessEvaluator()
         self.start_time = 0
         self.position_history = {}  # Track position repetitions
         
+    # def order_moves(self, board: chess.Board, moves: List[chess.Move]) -> List[chess.Move]:
+    #     """Orders moves based on basic heuristics."""
+    #     move_scores = []
+    #     for move in moves:
+    #         score = 0
+    #         moving_piece = board.piece_at(move.from_square)
+    #         captured_piece = board.piece_at(move.to_square)
+            
+    #         # Prioritize captures based on MVV-LVA (Most Valuable Victim - Least Valuable Aggressor)
+    #         if captured_piece:
+    #             score += 10 * self.evaluator.PIECE_VALUES[captured_piece.piece_type] - \
+    #                     self.evaluator.PIECE_VALUES[moving_piece.piece_type]
+            
+    #         # Prioritize checks
+    #         board.push(move)
+    #         if board.is_check():
+    #             score += 300
+    #             # Extra bonus for checks in winning positions
+    #             if self.evaluator.evaluate(board) > 500:  # If we're winning
+    #                 score += 200
+    #         board.pop()
+            
+    #         # Prioritize promotions
+    #         if move.promotion:
+    #             score += 800
+            
+    #         # Prioritize central squares for pieces
+    #         to_rank = chess.square_rank(move.to_square)
+    #         to_file = chess.square_file(move.to_square)
+    #         center_distance = abs(3.5 - to_file) + abs(3.5 - to_rank)
+    #         score -= center_distance * 10
+            
+    #         # Penalize moves that lead to repetition in winning positions
+    #         board.push(move)
+    #         pos_hash = board.fen().split(' ')[0]  # Only consider piece positions
+    #         if pos_hash in self.position_history and self.evaluator.evaluate(board) > 500:
+    #             score -= 400  # Strong penalty for repetition when winning
+    #         board.pop()
+            
+    #         move_scores.append((move, score))
+        
+    #     # Sort moves by score in descending order
+    #     move_scores.sort(key=lambda x: x[1], reverse=True)
+    #     return [move for move, _ in move_scores]
+
+
     def order_moves(self, board: chess.Board, moves: List[chess.Move]) -> List[chess.Move]:
-        """Orders moves based on basic heuristics."""
+        """Orders moves based on basic heuristics, prioritizing checkmate moves."""
         move_scores = []
         for move in moves:
             score = 0
             moving_piece = board.piece_at(move.from_square)
             captured_piece = board.piece_at(move.to_square)
             
+            # Check for immediate checkmate (highest priority)
+            board.push(move)
+            if board.is_checkmate():
+                score += 10000  # Extremely high score for checkmate
+            elif board.is_check():
+                score += 30
+                # Extra bonus for checks in winning positions
+                if self.evaluator.evaluate(board) > 500:  # If we're winning
+                    score += 50
+            board.pop()
+            
             # Prioritize captures based on MVV-LVA (Most Valuable Victim - Least Valuable Aggressor)
             if captured_piece:
                 score += 10 * self.evaluator.PIECE_VALUES[captured_piece.piece_type] - \
                         self.evaluator.PIECE_VALUES[moving_piece.piece_type]
-            
-            # Prioritize checks
-            board.push(move)
-            if board.is_check():
-                score += 300
-                # Extra bonus for checks in winning positions
-                if self.evaluator.evaluate(board) > 500:  # If we're winning
-                    score += 200
-            board.pop()
             
             # Prioritize promotions
             if move.promotion:

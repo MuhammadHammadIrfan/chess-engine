@@ -25,7 +25,7 @@ class ChessGUI:
             
         # Initialize game state
         self.board = chess.Board()
-        self.engine = ChessEngine(depth=4, time_limit=3.0) if self.game_mode == "AI" else None
+        self.engine = ChessEngine(depth=6, time_limit=3.0) if self.game_mode == "AI" else None
         
         # Load piece images
         self.pieces = {}
