@@ -8,7 +8,7 @@ from popup_manager import PopupManager
 from constants import *
 
 class ChessGUI:
-    def __init__(self):
+    def __init__(self, depth, time_limit):
         pygame.init()
         self.screen = pygame.display.set_mode((BOARD_SIZE, BOARD_SIZE))
         pygame.display.set_caption("Chess Game")
@@ -25,7 +25,7 @@ class ChessGUI:
             
         # Initialize game state
         self.board = chess.Board()
-        self.engine = ChessEngine(depth=6, time_limit=3.0) if self.game_mode == "AI" else None
+        self.engine = ChessEngine(depth=depth, time_limit=time_limit) if self.game_mode == "AI" else None
         
         # Load piece images
         self.pieces = {}

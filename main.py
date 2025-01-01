@@ -3,6 +3,10 @@ import sys
 import os
 from chess_gui import ChessGUI
 
+# Global settings
+DEPTH = 5
+TIME_LIMIT = 5.0
+
 def check_required_files():
     """Check if all required files and directories exist."""
     required_dirs = ['assets', 'assets/chess_pieces', 'assets/sounds']
@@ -55,7 +59,7 @@ def main():
     
     try:
         # Create and run the game
-        game = ChessGUI()
+        game = ChessGUI(depth=DEPTH, time_limit=TIME_LIMIT)
         game.run()
     except Exception as e:
         print(f"An error occurred: {e}")

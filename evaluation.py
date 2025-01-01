@@ -141,6 +141,8 @@ class ChessEvaluator:
             score += self._evaluate_king_centralization(board) * 50
             score += self._evaluate_passed_pawns(board) * 40
             score += self._evaluate_mobility(board) * 0.3
+            score += self._evaluate_piece_defense(board) * 20
+            
         else:
             # Middlegame priorities
             score += self._evaluate_king_safety(board) * self.KING_SAFETY_WEIGHT
@@ -150,7 +152,9 @@ class ChessEvaluator:
             score += self._evaluate_piece_activity(board) * self.PIECE_ACTIVITY_WEIGHT
             score += self._evaluate_king_attack(board) * self.KING_ATTACK_WEIGHT
             score += self._evaluate_piece_coordination(board) * self.PIECE_COORDINATION_WEIGHT
+            score += self._evaluate_piece_defense(board) * 20
 
+            
         # Add castling bonus (kept from your original evaluation)
         if board.has_castling_rights(chess.WHITE):
             score += 30
@@ -440,7 +444,7 @@ class ChessEvaluator:
             
             # Apply multiplier based on number of attackers
             if attacker_count > 1:
-                attack_value *= (attacker_count * 1.5)
+                attack_value *= (attacker_count * 1.2) #use 1.5 here
                 
             score += attack_value if color else -attack_value
             
@@ -683,5 +687,22 @@ class ChessEvaluator:
                 score -= (white_pawns - 1) * 15
             if black_pawns > 1:
                 score += (black_pawns - 1) * 15
+                
+        return score
+    
+    def _evaluate_piece_defense(self, board: chess.Board) -> float:
+        """Evaluates how well pieces are defended"""
+        score = 0.0
+        
+        for square in chess.SQUARES:
+            piece = board.piece_at(square)
+            if not piece:
+                continue
+                
+            # Count how many pieces are defending this piece
+            defenders = len(list(board.attackers(piece.color, square)))
+            if defenders > 0:
+                defense_value = defenders * 5
+                score += defense_value if piece.color else -defense_value
                 
         return score
